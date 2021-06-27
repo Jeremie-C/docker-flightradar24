@@ -22,7 +22,7 @@ case $arch in
     ;;
 esac
 
-if curl --output /tmp/fr24feed.deb "${FR24FILE}"; then
+if wget -O /tmp/fr24feed.deb $FR24FILE; then
   echo "Download OK"
 else
   echo "Download failed!"
