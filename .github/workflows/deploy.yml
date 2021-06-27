@@ -1,0 +1,98 @@
+name: Deploy to Docker Hub
+
+on:
+  push:
+    tags:
+      - 'v**'
+
+# Env vars
+env:
+  REPO: jeremiec82
+  IMAGE: flightradar
+  PUSH: true
+
+jobs:
+  # Run tests.
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+      - name: Cache Docker layers
+        uses: actions/cache@v2
+        with:
+          path: /tmp/.buildx-cache
+          key: all-buildx-${{ github.sha }}
+          restore-keys: |
+            all-buildx-
+      - name: Build
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: ./Dockerfile
+          platforms: linux/i386,linux/amd64,linux/arm/v6,linux/arm/v7,linux/arm64
+          #platforms: linux/amd64
+          push: false
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache
+  # Deploy to DockerHub
+  deploy_dockerhub:
+    name: Deploy to DockerHub (Multi-Arch)
+    needs: test
+    environment: docker
+    runs-on: ubuntu-latest
+    steps:
+      # Checkout Code
+      - name: Checkout
+        uses: actions/checkout@v2
+      # Set Up QEMU
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
+      # Set up buildx
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+      # Set uo Cache
+      - name: Cache Docker layers
+        uses: actions/cache@v2
+        with:
+          path: /tmp/.buildx-cache
+          key: all-buildx-${{ github.sha }}
+          restore-keys: |
+            all-buildx-    
+      # Login to DockerHub
+      - name: Login to DockerHub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      # Get TAG of release
+      - name: Get tags list
+        id: tags
+        run: |
+          # Strip git ref prefix from version
+          VERSION=$(echo "${{ github.ref }}" | sed -e 's,.*/\(.*\),\1,')
+          # Strip "v" prefix from tag name
+          [[ "${{ github.ref }}" == "refs/tags/"* ]] && VERSION=$(echo $VERSION | sed -e 's/^v//')
+          # Use Docker `latest` tag convention
+          [ "$VERSION" == "main" ] && TAGS=${{ env.REPO }}/${{ env.IMAGE }}:latest
+          [ "$VERSION" != "main" ] && TAGS=${{ env.REPO }}/${{ env.IMAGE }}:$VERSION,${{ env.REPO }}/${{ env.IMAGE }}:latest
+          echo TAGS=$TAGS
+          echo "::set-output name=tags::$TAGS"
+      # Build & Push
+      - name: Build and push
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: ./Dockerfile
+          platforms: linux/i386,linux/amd64,linux/arm/v6,linux/arm/v7,linux/arm64
+          #platforms: linux/amd64
+          push: ${{ env.PUSH }}
+          tags: ${{ steps.tags.outputs.tags }}
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache
+
+
