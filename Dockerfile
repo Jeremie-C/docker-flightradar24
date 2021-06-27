@@ -11,7 +11,8 @@ RUN apt-get update && apt-get upgrade -y && \
   apt-get install -y --no-install-recommends \
   # S6 Install
   ca-certificates wget \
-  curl net-tools bc && \
+  curl net-tools bc gnupg && \
+  dpkg-reconfigure ca-certificates -f noninteractive && \
   # Chmod scripts
   chmod +x /scripts/*.sh && \
   # S6 OVERLAY
@@ -21,7 +22,7 @@ RUN apt-get update && apt-get upgrade -y && \
   # Healthcheck
   chmod +x /healthcheck.sh && \
   # Cleanup
-  apt-get remove -y git ca-certificates wget curl && \
+  apt-get remove -y git ca-certificates wget curl gnupg && \
   apt-get autoremove -y && \
   rm -rf /scripts /tmp /var/lib/apt/lists/*
 
