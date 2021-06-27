@@ -43,5 +43,5 @@ jobs:
         run: |
           docker image inspect myimage:latest
           docker run --name test -d myimage:latest
-          docker logs -f --until=15s test
+          docker logs -n --until=15s test
           docker rm --force test
