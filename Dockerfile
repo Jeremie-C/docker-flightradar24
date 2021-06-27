@@ -11,7 +11,7 @@ RUN apt-get update && apt-get upgrade -y && \
   apt-get install -y --no-install-recommends \
   # S6 Install
   ca-certificates wget \
-  binutils net-tools bc && \
+  binutils net-tools bc expect && \
   # Chmod scripts
   chmod +x /scripts/*.sh && \
   # S6 OVERLAY

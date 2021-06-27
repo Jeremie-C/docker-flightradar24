@@ -36,4 +36,4 @@ tar xzvf /tmp/data.tar.gz
 mv -v /tmp/usr/bin/* /usr/bin/
 mv -v /tmp/usr/lib/fr24 /usr/lib/
 mv -v /tmp/usr/share/fr24 /usr/share/
-touch /var/log/fr24feed.log
+mkdir -p /var/log/fr24feed/
