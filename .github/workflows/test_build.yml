@@ -44,5 +44,5 @@ jobs:
           docker image inspect myimage:latest
           docker run --name test -d myimage:latest
           sleep 20
-          docker logs -n test
+          docker logs test
           docker rm --force test
