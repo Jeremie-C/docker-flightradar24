@@ -30,10 +30,10 @@ else
 fi
 
 # Deploy fr24feed.deb
-ar x /tmp/fr24feed.deb
+cd /tmp || exit 1
+ar xv /tmp/fr24feed.deb
 tar xzvf /tmp/data.tar.gz
 mv -v /tmp/usr/bin/* /usr/bin/
 mv -v /tmp/usr/lib/fr24 /usr/lib/
 mv -v /tmp/usr/share/fr24 /usr/share/
 touch /var/log/fr24feed.log
-rm -v /tmp/fr24feed.deb
