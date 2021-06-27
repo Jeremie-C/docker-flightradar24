@@ -23,7 +23,7 @@ RUN apt-get update && apt-get upgrade -y && \
   # Cleanup
   apt-get remove -y ca-certificates wget && \
   apt-get autoremove -y && \
-  rm -rf /scripts /tmp /var/lib/apt/lists/*
+  rm -rf /scripts /tmp/* /var/lib/apt/lists/*
 
 ENTRYPOINT ["/init"]
 EXPOSE 8754/tcp

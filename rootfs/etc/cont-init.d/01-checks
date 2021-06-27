@@ -9,10 +9,7 @@ YELLOW='\e[1;33m'
 #CYAN='\e[0;36m'
 
 # Set up timezone
-if [ -z "${TZ}" ]; then
-  echo "${YELLOW}WARNING: TZ environment variable not set${NOCOLOR}"
-else
-  ln -snf "/usr/share/zoneinfo/$TZ" /etc/localtime && echo "$TZ" > /etc/timezone
-fi
+ln -snf /usr/share/zoneinfo/GMT /etc/localtime && echo "GMT" > /etc/timezone
+
 
 exit $EXITCODE
