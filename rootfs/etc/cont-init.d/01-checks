@@ -8,6 +8,12 @@ LIGHTRED='\e[1;31m'
 YELLOW='\e[1;33m'
 CYAN='\e[0;36m'
 
+# BeastHost
+if [ -z "${BEAST_HOST}" ]; then
+  echo -e "${LIGHTRED}ERROR: BEAST_HOST environment variable not set${NOCOLOR}"
+  exit 1
+fi
+# FR24Key and Signup
 if [ -z "${FR24_KEY}" ]; then
   echo -e "${YELLOW}WARNING: FR24_KEY environment variable was not set, try to signup to FR24${NOCOLOR}"
   # Mail
@@ -44,6 +50,7 @@ if [ -z "${FR24_KEY}" ]; then
   TMPFILE="$TMPDIR/signupfr24"
   TMPLOG="$TMPDIR/signupfr24.log"
   # Except Script
+  # shellcheck disable=SC2028
   {
     echo '#!/usr/bin/env expect --'
     echo 'set timeout 120'
@@ -68,9 +75,20 @@ if [ -z "${FR24_KEY}" ]; then
     echo 'expect "Step 4.1 - Receiver selection (in order to run MLAT please use DVB-T stick with dump1090 utility bundled with fr24feed):"'
     echo 'expect "Enter your receiver type (1-7)$:"'
     echo "send \"4\r\""
+    echo 'expect "Step 4.2 - Please select connection type:"'
+    echo 'expect "Enter your connection type (1-2)$:"'
+    echo "send \"1\r\""
+    echo "expect \"Step 4.3A - Please enter your receiver's IP address/hostname\r\n\$:\""
+    echo "send -- \"${BEAST_HOST:-127.0.0.1}\r\""
+    echo "expect \"Step 4.3B - Please enter your receiver's data port number\r\n\$:\""
+    echo "send -- \"${BEAST_PORT:-30005}\r\""
+    echo 'expect "Step 5.1 - Would you like to enable RAW data feed on port 30334 (yes/no)$:"'
+    echo "send \"no\r\""
+    echo 'expect "Step 5.2 - Would you like to enable Basestation data feed on port 30003 (yes/no)$:"'
+    echo "send \"no\r\""
     echo 'expect "Step 6 - Please select desired logfile mode:"'
     echo 'expect "Select logfile mode (0-2)$:"'
-    echo "send \"0\r\""
+    echo "send \"1\r\""
     echo 'expect "Submitting form data...OK"'
     echo 'expect "+ Your sharing key ("'
     echo 'expect "+ Your radar id is"'
@@ -107,7 +125,7 @@ if [ -z "${FR24_KEY}" ]; then
     exit 1
   fi
   # Set FR24_KEY Env
-  rm -rf $TMPDIR
+  rm -rf "$TMPDIR"
   printf "%s" "$FR24_KEY" > /var/run/s6/container_environment/FR24_KEY
   # Inform User
   echo ""
