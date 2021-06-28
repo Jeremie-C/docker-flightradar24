@@ -21,7 +21,7 @@ if [ -z "${FR24_KEY}" ]; then
     echo -e "${LIGHTRED}ERROR: FR24_KEY & FR24_MAIL environment variable was not set!${NOCOLOR}"
     EXITCODE=1
   else
-    if ! echo "$FR24_MAIL" | grep -P '^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$' > /dev/null 2>&1; then
+    if ! echo "${FR24_MAIL}" | grep -P '^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$' > /dev/null 2>&1; then
       echo -e "${LIGHTRED}ERROR: FR24_MAIL is not a valid email address!${NOCOLOR}"
       EXITCODE=1      
     fi
@@ -43,7 +43,8 @@ if [ -z "${FR24_KEY}" ]; then
   fi
   # ERROR ?
   if [ $EXITCODE -gt 0 ]; then
-   exit 1
+    echo -e "${LIGHTRED}ERROR: see behind for list of errors!${NOCOLOR}"
+    exit 1
   fi
   # Signup Vars
   TMPDIR="$(mktemp -d)"
@@ -53,7 +54,7 @@ if [ -z "${FR24_KEY}" ]; then
   # shellcheck disable=SC2028
   {
     echo '#!/usr/bin/env expect --'
-    echo 'set timeout 120'
+    echo 'set timeout 60'
     echo "spawn fr24feed --signup"
     echo "sleep 3"
     echo 'expect "Step 1.1 - Enter your email address (username@domain.tld)\r\n$:"'
@@ -79,16 +80,16 @@ if [ -z "${FR24_KEY}" ]; then
     echo 'expect "Enter your connection type (1-2)$:"'
     echo "send \"1\r\""
     echo "expect \"Step 4.3A - Please enter your receiver's IP address/hostname\r\n\$:\""
-    echo "send -- \"${BEAST_HOST:-127.0.0.1}\r\""
+    echo "send -- \"${BEAST_HOST}\r\""
     echo "expect \"Step 4.3B - Please enter your receiver's data port number\r\n\$:\""
-    echo "send -- \"${BEAST_PORT:-30005}\r\""
+    echo "send -- \"${BEAST_PORT}\r\""
     echo 'expect "Step 5.1 - Would you like to enable RAW data feed on port 30334 (yes/no)$:"'
     echo "send \"no\r\""
     echo 'expect "Step 5.2 - Would you like to enable Basestation data feed on port 30003 (yes/no)$:"'
     echo "send \"no\r\""
     echo 'expect "Step 6 - Please select desired logfile mode:"'
     echo 'expect "Select logfile mode (0-2)$:"'
-    echo "send \"1\r\""
+    echo "send \"0\r\""
     echo 'expect "Submitting form data...OK"'
     echo 'expect "+ Your sharing key ("'
     echo 'expect "+ Your radar id is"'
@@ -106,8 +107,8 @@ if [ -z "${FR24_KEY}" ]; then
   REGEX_RADAR_ID='^\+ Your radar id is ([A-Za-z0-9\-]+), please include it in all email communication with us\.'
   # Sharing key
   if grep -P "$REGEX_KEY" "$TMPLOG" > /dev/null 2>&1; then
-    FR24_KEY=$(grep -P "$REGEX_KEY" "$TMPLOG" | sed -r "s/$REGEX_KEY/\1/")
-    echo -e "${CYAN}FR24_KEY=$FR24_KEY ${NOCOLOR}"
+    FR24_NEWKEY=$(grep -P "$REGEX_KEY" "$TMPLOG" | sed -r "s/$REGEX_KEY/\1/")
+    echo -e "${CYAN}FR24_KEY=${FR24_NEWKEY} ${NOCOLOR}"
   else
     echo -e "${LIGHTRED}ERROR: Could not find sharing key${NOCOLOR}"
     echo ""
@@ -117,7 +118,7 @@ if [ -z "${FR24_KEY}" ]; then
   # Radar ID
   if grep -P "$REGEX_RADAR_ID" "$TMPLOG" > /dev/null 2>&1; then
     FR24_RID=$(grep -P "$REGEX_RADAR_ID" "$TMPLOG" | sed -r "s/$REGEX_RADAR_ID/\1/")
-    echo -e "${CYAN}RADAR_ID=$FR24_RID ${NOCOLOR}"
+    echo -e "${CYAN}RADAR_ID=${FR24_RID} ${NOCOLOR}"
   else
     echo -e "${LIGHTRED}ERROR: Could not find Radar ID${NOCOLOR}"
     echo ""
@@ -126,16 +127,15 @@ if [ -z "${FR24_KEY}" ]; then
   fi
   # Set FR24_KEY Env
   rm -rf "$TMPDIR"
-  printf "%s" "$FR24_KEY" > /var/run/s6/container_environment/FR24_KEY
+  printf "%s" "${FR24_NEWKEY}" > /var/run/s6/container_environment/FR24_KEY
   # Inform User
   echo ""
-  echo -e "${CYAN}INFO: Please restart the container with environment variable FR24_KEY=$FR24_KEY environment variable${NOCOLOR}"
-  echo ""
+  echo -e "${CYAN}INFO: Please restart the container with environment variable FR24_KEY=${FR24_NEWKEY} environment variable${NOCOLOR}"
   echo -e "${CYAN}You can remove FR24_MAIL, LATITUDE, LONGITUDE & ALTITUDE environment variable${NOCOLOR}"
 else
   # FR24_KEY & signup env variables
   if [ -n "${FR24_MAIL}" ] || [ -n "${LATITUDE}" ] || [ -n "${LONGITUDE}" ] || [ -n "${ALTITUDE}" ]; then
-    echo -e "${CYAN}You can remove FR24_MAIL, LATITUDE, LONGITUDE & ALTITUDE environment variable${NOCOLOR}"
+    echo -e "${CYAN}FR24_MAIL, LATITUDE, LONGITUDE & ALTITUDE environment variable are not used when FR24_KEY is provided ${NOCOLOR}"
   fi
 fi
 
