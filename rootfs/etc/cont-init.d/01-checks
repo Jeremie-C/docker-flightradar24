@@ -55,7 +55,7 @@ if [ -z "${FR24_KEY}" ]; then
   # shellcheck disable=SC2153
   {
     echo '#!/usr/bin/env expect --'
-    echo 'set timeout 60'
+    echo 'set timeout 120'
     echo "spawn fr24feed --signup"
     echo "sleep 3"
     echo 'expect "Step 1.1 - Enter your email address (username@domain.tld)\r\n$:"'
@@ -110,7 +110,7 @@ if [ -z "${FR24_KEY}" ]; then
   NB_LINE_KEY=$(grep -Pc "$REGEX_KEY" "$TMPLOG")
   if [ "$NB_LINE_KEY" -gt 0 ]; then
     FR24_NEWKEY=$(grep -P "$REGEX_KEY" "$TMPLOG" | sed -r "s/$REGEX_KEY/\1/")
-    echo -e "${CYAN}FR24_KEY=${FR24_NEWKEY} ${NOCOLOR}"
+    echo -e "${CYAN}FR24_KEY=$FR24_NEWKEY ${NOCOLOR}"
   else
     echo -e "${LIGHTRED}ERROR: Could not find sharing key${NOCOLOR}"
     echo ""
@@ -121,7 +121,7 @@ if [ -z "${FR24_KEY}" ]; then
   NB_LINE_ID=$(grep -Pc "$REGEX_RADAR_ID" "$TMPLOG")
   if [ "$NB_LINE_ID" -gt 0 ]; then
     FR24_RID=$(grep -P "$REGEX_RADAR_ID" "$TMPLOG" | sed -r "s/$REGEX_RADAR_ID/\1/")
-    echo -e "${CYAN}RADAR_ID=${FR24_RID} ${NOCOLOR}"
+    echo -e "${CYAN}RADAR_ID=$FR24_RID ${NOCOLOR}"
   else
     echo -e "${LIGHTRED}ERROR: Could not find Radar ID${NOCOLOR}"
     echo ""
@@ -130,7 +130,7 @@ if [ -z "${FR24_KEY}" ]; then
   fi
   # Set FR24_KEY Env
   #rm -rf "$TMPDIR"
-  printf "%s" "${FR24_NEWKEY}" > /var/run/s6/container_environment/FR24_KEY
+  printf "%s" "$FR24_NEWKEY" > /var/run/s6/container_environment/FR24_KEY
   # Inform User
   echo ""
   echo -e "${CYAN}INFO: Please restart the container with environment variable FR24_KEY=${FR24_NEWKEY} environment variable${NOCOLOR}"
