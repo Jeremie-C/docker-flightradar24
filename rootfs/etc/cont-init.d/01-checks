@@ -2,144 +2,16 @@
 # shellcheck shell=bash
 
 EXITCODE=0
-# Define bash colours
-NOCOLOR="\e[0m"
-LIGHTRED="\e[31m"
-YELLOW="\e[33m"
-CYAN="\e[36m"
 
 # BeastHost
 if [ -z "${BEAST_HOST}" ]; then
-  echo -e "${LIGHTRED}ERROR: BEAST_HOST environment variable not set${NOCOLOR}"
-  exit 1
+  echo "ERROR: BEAST_HOST environment variable not set"
+  EXITCODE=1
 fi
-# FR24Key and Signup
+# FR24_Key
 if [ -z "${FR24_KEY}" ]; then
-  echo -e "${YELLOW}WARNING: FR24_KEY environment variable was not set, try to signup to FR24${NOCOLOR}"
-  # Mail
-  if [ -z "${FR24_MAIL}" ]; then
-    echo -e "${LIGHTRED}ERROR: FR24_KEY & FR24_MAIL environment variable was not set!${NOCOLOR}"
-    EXITCODE=1
-  else
-    if ! echo "${FR24_MAIL}" | grep -P '^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$' > /dev/null 2>&1; then
-      echo -e "${LIGHTRED}ERROR: FR24_MAIL is not a valid email address!${NOCOLOR}"
-      EXITCODE=1      
-    fi
-  fi
-  # LATITUDE
-  if [ -z "${LATITUDE}" ]; then
-    echo -e "${LIGHTRED}ERROR: FR24_KEY & LATITUDE environment variable not set!${NOCOLOR}"
-    EXITCODE=1
-  fi
-  # LONGITUDE
-  if [ -z "${LONGITUDE}" ]; then
-    echo -e "${LIGHTRED}ERROR: FR24_KEY & LONGITUDE environment variable not set!${NOCOLOR}"
-    EXITCODE=1
-  fi
-  # ALTITUDE
-  if [ -z "${ALTITUDE}" ]; then
-    echo -e "${LIGHTRED}ERROR: FR24_KEY & ALTITUDE environment variable not set!${NOCOLOR}"
-    EXITCODE=1
-  fi
-  # ERROR ?
-  if [ $EXITCODE -gt 0 ]; then
-    echo -e "${LIGHTRED}ERROR: see behind for list of errors!${NOCOLOR}"
-    exit 1
-  fi
-  # Signup Vars
-  TMPDIR="$(mktemp -d)"
-  TMPFILE="$TMPDIR/signupfr24"
-  TMPLOG="$TMPDIR/signupfr24.log"
-  # Except Script
-  # shellcheck disable=SC2028
-  # shellcheck disable=SC2153
-  {
-    echo '#!/usr/bin/env expect --'
-    echo 'set timeout 180'
-    echo "spawn fr24feed --signup"
-    echo "sleep 3"
-    echo 'expect "Step 1.1 - Enter your email address (username@domain.tld)\r\n$:"'
-    echo "send -- \"${FR24_MAIL}\n\""
-    echo 'expect "Step 1.2 - If you used to feed FR24 with ADS-B data before, enter your sharing key.\r\n"'
-    echo 'expect "$:"'
-    echo "send \"\r\""
-    echo 'expect "Step 1.3 - Would you like to participate in MLAT calculations? (yes/no)$:"'
-    echo "send \"yes\r\""
-    echo "expect \"Step 3.A - Enter antenna's latitude (DD.DDDD)\r\n\$:\""
-    echo "send -- \"${LATITUDE}\r\""
-    echo "expect \"Step 3.B - Enter antenna's longitude (DDD.DDDD)\r\n\$:\""
-    echo "send -- \"${LONGITUDE}\r\""
-    echo "expect \"Step 3.C - Enter antenna's altitude above the sea level (in feet)\r\n\$:\""
-    echo "send -- \"${ALTITUDE}\r\""
-    echo 'expect "Would you like to continue using these settings?"'
-    echo 'expect "Enter your choice (yes/no)$:"'
-    echo "send \"yes\r\""
-    echo 'expect "Step 4.1 - Receiver selection (in order to run MLAT please use DVB-T stick with dump1090 utility bundled with fr24feed):"'
-    echo 'expect "Enter your receiver type (1-7)$:"'
-    echo "send \"4\r\""
-    echo 'expect "Step 4.2 - Please select connection type:"'
-    echo 'expect "Enter your connection type (1-2)$:"'
-    echo "send \"1\r\""
-    echo "expect \"Step 4.3A - Please enter your receiver's IP address/hostname\r\n\$:\""
-    echo "send -- \"${BEAST_HOST}\r\""
-    echo "expect \"Step 4.3B - Please enter your receiver's data port number\r\n\$:\""
-    echo "send -- \"${BEAST_PORT}\r\""
-    echo 'expect "Step 5.1 - Would you like to enable RAW data feed on port 30334 (yes/no)$:"'
-    echo "send \"no\r\""
-    echo 'expect "Step 5.2 - Would you like to enable Basestation data feed on port 30003 (yes/no)$:"'
-    echo "send \"no\r\""
-    echo 'expect "Step 6 - Please select desired logfile mode:"'
-    echo 'expect "Select logfile mode (0-2)$:"'
-    echo "send \"0\r\""
-    echo 'expect "Submitting form data...OK"'
-    echo 'expect "+ Your sharing key ("'
-    echo 'expect "+ Your radar id is"'
-    echo 'expect "Saving settings to /etc/fr24feed.ini...OK"'
-  } > "$TMPFILE"
-  # Run Scrpit
-  if ! expect "$TMPFILE" > "$TMPLOG" 2>&1; then
-    echo -e "${LIGHTRED}ERROR: Problem running sign-up process${NOCOLOR}"
-    echo ""
-    cat "$TMPLOG"
-    exit 1
-  fi
-  # REGEX
-  REGEX_KEY='^\+ Your sharing key \((\w+)\) has been configured and emailed to you for backup purposes\.'
-  REGEX_RADAR_ID='^\+ Your radar id is ([A-Za-z0-9\-]+), please include it in all email communication with us\.'
-  # Sharing key
-  NB_LINE_KEY=$(grep -Pc "$REGEX_KEY" "$TMPLOG")
-  if [ "$NB_LINE_KEY" -gt 0 ]; then
-    FR24_NEWKEY=$(grep -P "$REGEX_KEY" "$TMPLOG" | sed -r "s/$REGEX_KEY/\1/")
-    echo -e "${CYAN}FR24_KEY=$FR24_NEWKEY ${NOCOLOR}"
-  else
-    echo -e "${LIGHTRED}ERROR: Could not find sharing key${NOCOLOR}"
-    echo ""
-    cat "$TMPLOG"
-    exit 1
-  fi
-  # Radar ID
-  NB_LINE_ID=$(grep -Pc "$REGEX_RADAR_ID" "$TMPLOG")
-  if [ "$NB_LINE_ID" -gt 0 ]; then
-    FR24_RID=$(grep -P "$REGEX_RADAR_ID" "$TMPLOG" | sed -r "s/$REGEX_RADAR_ID/\1/")
-    echo -e "${CYAN}RADAR_ID=$FR24_RID ${NOCOLOR}"
-  else
-    echo -e "${LIGHTRED}ERROR: Could not find Radar ID${NOCOLOR}"
-    echo ""
-    cat "$TMPLOG"
-    exit 1
-  fi
-  # Set FR24_KEY Env
-  #rm -rf "$TMPDIR"
-  printf "%s" "$FR24_NEWKEY" > /var/run/s6/container_environment/FR24_KEY
-  # Inform User
-  echo ""
-  echo -e "${CYAN}INFO: Please restart the container with environment variable FR24_KEY=$FR24_NEWKEY environment variable${NOCOLOR}"
-  echo -e "${CYAN}You can remove FR24_MAIL, LATITUDE, LONGITUDE & ALTITUDE environment variable${NOCOLOR}"
-else
-  # FR24_KEY & signup env variables
-  if [ -n "${FR24_MAIL}" ] || [ -n "${LATITUDE}" ] || [ -n "${LONGITUDE}" ] || [ -n "${ALTITUDE}" ]; then
-    echo -e "${CYAN}FR24_MAIL, LATITUDE, LONGITUDE & ALTITUDE environment variable are not used when FR24_KEY is provided ${NOCOLOR}"
-  fi
+  echo "ERROR: FR24_KEY environment variable was not set"
+  EXITCODE=1
 fi
 
 # Set up timezone
