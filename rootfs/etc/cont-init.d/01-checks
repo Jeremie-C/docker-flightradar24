@@ -3,10 +3,10 @@
 
 EXITCODE=0
 # Define bash colours
-NOCOLOR='\e[0m'
-LIGHTRED='\e[1;31m'
-YELLOW='\e[1;33m'
-CYAN='\e[0;36m'
+NOCOLOR="\e[0m"
+LIGHTRED="\e[1;31m"
+YELLOW="\e[1;33m"
+CYAN="\e[0;36m"
 
 # BeastHost
 if [ -z "${BEAST_HOST}" ]; then
@@ -106,7 +106,7 @@ if [ -z "${FR24_KEY}" ]; then
   REGEX_KEY='^\+ Your sharing key \((\w+)\) has been configured and emailed to you for backup purposes\.'
   REGEX_RADAR_ID='^\+ Your radar id is ([A-Za-z0-9\-]+), please include it in all email communication with us\.'
   # Sharing key
-  if grep -P "$REGEX_KEY" "$TMPLOG" > /dev/null 2>&1; then
+  if [ $(grep -Pc "$REGEX_KEY" "$TMPLOG") -gt 0 ]; then
     FR24_NEWKEY=$(grep -P "$REGEX_KEY" "$TMPLOG" | sed -r "s/$REGEX_KEY/\1/")
     echo -e "${CYAN}FR24_KEY=${FR24_NEWKEY} ${NOCOLOR}"
   else
@@ -116,7 +116,7 @@ if [ -z "${FR24_KEY}" ]; then
     exit 1
   fi
   # Radar ID
-  if grep -P "$REGEX_RADAR_ID" "$TMPLOG" > /dev/null 2>&1; then
+  if [ $(grep -Pc "$REGEX_RADAR_ID" "$TMPLOG") -gt 0 ]; then
     FR24_RID=$(grep -P "$REGEX_RADAR_ID" "$TMPLOG" | sed -r "s/$REGEX_RADAR_ID/\1/")
     echo -e "${CYAN}RADAR_ID=${FR24_RID} ${NOCOLOR}"
   else
@@ -126,7 +126,7 @@ if [ -z "${FR24_KEY}" ]; then
     exit 1
   fi
   # Set FR24_KEY Env
-  rm -rf "$TMPDIR"
+  #rm -rf "$TMPDIR"
   printf "%s" "${FR24_NEWKEY}" > /var/run/s6/container_environment/FR24_KEY
   # Inform User
   echo ""
