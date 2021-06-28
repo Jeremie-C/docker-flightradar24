@@ -108,7 +108,7 @@ if [ -z "${FR24_KEY}" ]; then
   REGEX_RADAR_ID='^\+ Your radar id is ([A-Za-z0-9\-]+), please include it in all email communication with us\.'
   # Sharing key
   NB_LINE_KEY=$(grep -Pc "$REGEX_KEY" "$TMPLOG")
-  if [ $NB_LINE_KEY -gt 0 ]; then
+  if [ "$NB_LINE_KEY" -gt 0 ]; then
     FR24_NEWKEY=$(grep -P "$REGEX_KEY" "$TMPLOG" | sed -r "s/$REGEX_KEY/\1/")
     echo -e "${CYAN}FR24_KEY=${FR24_NEWKEY} ${NOCOLOR}"
   else
@@ -119,7 +119,7 @@ if [ -z "${FR24_KEY}" ]; then
   fi
   # Radar ID
   NB_LINE_ID=$(grep -Pc "$REGEX_RADAR_ID" "$TMPLOG")
-  if [ $NB_LINE_ID -gt 0 ]; then
+  if [ "$NB_LINE_ID" -gt 0 ]; then
     FR24_RID=$(grep -P "$REGEX_RADAR_ID" "$TMPLOG" | sed -r "s/$REGEX_RADAR_ID/\1/")
     echo -e "${CYAN}RADAR_ID=${FR24_RID} ${NOCOLOR}"
   else
