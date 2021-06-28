@@ -55,7 +55,7 @@ if [ -z "${FR24_KEY}" ]; then
   # shellcheck disable=SC2153
   {
     echo '#!/usr/bin/env expect --'
-    echo 'set timeout 120'
+    echo 'set timeout 180'
     echo "spawn fr24feed --signup"
     echo "sleep 3"
     echo 'expect "Step 1.1 - Enter your email address (username@domain.tld)\r\n$:"'
@@ -133,7 +133,7 @@ if [ -z "${FR24_KEY}" ]; then
   printf "%s" "$FR24_NEWKEY" > /var/run/s6/container_environment/FR24_KEY
   # Inform User
   echo ""
-  echo -e "${CYAN}INFO: Please restart the container with environment variable FR24_KEY=${FR24_NEWKEY} environment variable${NOCOLOR}"
+  echo -e "${CYAN}INFO: Please restart the container with environment variable FR24_KEY=$FR24_NEWKEY environment variable${NOCOLOR}"
   echo -e "${CYAN}You can remove FR24_MAIL, LATITUDE, LONGITUDE & ALTITUDE environment variable${NOCOLOR}"
 else
   # FR24_KEY & signup env variables
