@@ -3,4 +3,4 @@
 
 ulimit -c 0
 
-/usr/bin/fr24feed > /dev/null 2>&1
+/usr/bin/qemu-arm-static /usr/bin/rbfeeder > /dev/null 2>&1
