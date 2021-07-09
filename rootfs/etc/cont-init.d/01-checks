@@ -15,9 +15,9 @@ if [ -z "${FR24_KEY}" ]; then
     echo "INFO: Signup already processed."
     echo "INFO: Please restart the container with environment variable FR24_KEY=$KEY_VAL environment variable"
     echo "INFO: You can remove FR24_MAIL, LATITUDE, LONGITUDE & ALTITUDE environment variable"
-    #exit 1
+    exit 1
   fi
-  
+
   echo "WARNING: FR24_KEY environment variable was not set, try to signup to FR24"
   rm -f /etc/fr24feed.ini
   # Mail
@@ -114,7 +114,7 @@ if [ -z "${FR24_KEY}" ]; then
   NB_LINE_KEY=$(grep -Pc "$REGEX_KEY" "$TMPLOG")
   if [ "$NB_LINE_KEY" -gt 0 ]; then
     FR24_NEWKEY=$(grep -P "$REGEX_KEY" "$TMPLOG" | sed -r "s/$REGEX_KEY/\1/")
-    echo "FR24_KEY=$FR24_NEWKEY"
+    echo "INFO: FR24_KEY=$FR24_NEWKEY"
     printf "%s" "$FR24_NEWKEY" > /FR24_KEY
   else
     echo "ERROR: Could not find sharing key"
@@ -126,7 +126,7 @@ if [ -z "${FR24_KEY}" ]; then
   NB_LINE_ID=$(grep -Pc "$REGEX_RADAR_ID" "$TMPLOG")
   if [ "$NB_LINE_ID" -gt 0 ]; then
     FR24_RID=$(grep -P "$REGEX_RADAR_ID" "$TMPLOG" | sed -r "s/$REGEX_RADAR_ID/\1/")
-    echo "RADAR_ID=$FR24_RID"
+    echo "INFO: RADAR_ID=$FR24_RID"
     printf "%s" "$FR24_RID" > /FR24_RID
   else
     echo "ERROR: Could not find Radar ID"
@@ -134,17 +134,17 @@ if [ -z "${FR24_KEY}" ]; then
     cat "$TMPLOG"
     exit 1
   fi
-  # Set FR24_KEY Env
-  #rm -rf "$TMPDIR"
-  printf "%s" "$FR24_NEWKEY" > /var/run/s6/container_environment/FR24_KEY
+  # Delete temp dir
+  rm -rf "$TMPDIR"
   # Inform User
   echo ""
   echo "INFO: Please restart the container with environment variable FR24_KEY=$FR24_NEWKEY environment variable"
   echo "You can remove FR24_MAIL, LATITUDE, LONGITUDE & ALTITUDE environment variable"
+  exit 1
 else
   # FR24_KEY & signup env variables
   if [ -n "${FR24_MAIL}" ] || [ -n "${LATITUDE}" ] || [ -n "${LONGITUDE}" ] || [ -n "${ALTITUDE}" ]; then
-    echo "FR24_MAIL, LATITUDE, LONGITUDE & ALTITUDE environment variable are not used when FR24_KEY is provided"
+    echo "INFO: FR24_MAIL, LATITUDE, LONGITUDE & ALTITUDE environment variable are not used when FR24_KEY is provided"
   fi
 fi
 
