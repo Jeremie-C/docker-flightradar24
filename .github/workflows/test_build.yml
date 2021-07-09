@@ -42,7 +42,7 @@ jobs:
       - name: Inspect
         run: |
           docker image inspect myimage:latest
-          docker run --name test -d myimage:latest
+          docker run --name test -d myimage:latest -e 'BEAST_HOST'='192.1681.1' -e 'FR24_MAIL'='mel@mel.com' -e 'LATITUDE'='46.0' -e 'LONGITUDE'='4.0' -e 'ALTITUDE'='590'
           sleep 20
           docker logs test
           docker rm --force test
