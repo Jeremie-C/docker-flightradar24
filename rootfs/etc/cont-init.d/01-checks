@@ -2,48 +2,43 @@
 # shellcheck shell=bash
 
 EXITCODE=0
-# Define bash colours
-NOCOLOR="\e[0m"
-LIGHTRED="\e[31m"
-YELLOW="\e[33m"
-CYAN="\e[36m"
 
 # BeastHost
 if [ -z "${BEAST_HOST}" ]; then
-  echo -e "${LIGHTRED}ERROR: BEAST_HOST environment variable not set${NOCOLOR}"
+  echo -e "ERROR: BEAST_HOST environment variable not set"
   exit 1
 fi
 # FR24Key and Signup
 if [ -z "${FR24_KEY}" ]; then
-  echo -e "${YELLOW}WARNING: FR24_KEY environment variable was not set, try to signup to FR24${NOCOLOR}"
+  echo -e "WARNING: FR24_KEY environment variable was not set, try to signup to FR24"
   # Mail
   if [ -z "${FR24_MAIL}" ]; then
-    echo -e "${LIGHTRED}ERROR: FR24_KEY & FR24_MAIL environment variable was not set!${NOCOLOR}"
+    echo -e "ERROR: FR24_KEY & FR24_MAIL environment variable was not set!"
     EXITCODE=1
   else
     if ! echo "${FR24_MAIL}" | grep -P '^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$' > /dev/null 2>&1; then
-      echo -e "${LIGHTRED}ERROR: FR24_MAIL is not a valid email address!${NOCOLOR}"
+      echo -e "ERROR: FR24_MAIL is not a valid email address!"
       EXITCODE=1      
     fi
   fi
   # LATITUDE
   if [ -z "${LATITUDE}" ]; then
-    echo -e "${LIGHTRED}ERROR: FR24_KEY & LATITUDE environment variable not set!${NOCOLOR}"
+    echo -e "ERROR: FR24_KEY & LATITUDE environment variable not set!"
     EXITCODE=1
   fi
   # LONGITUDE
   if [ -z "${LONGITUDE}" ]; then
-    echo -e "${LIGHTRED}ERROR: FR24_KEY & LONGITUDE environment variable not set!${NOCOLOR}"
+    echo -e "ERROR: FR24_KEY & LONGITUDE environment variable not set!"
     EXITCODE=1
   fi
   # ALTITUDE
   if [ -z "${ALTITUDE}" ]; then
-    echo -e "${LIGHTRED}ERROR: FR24_KEY & ALTITUDE environment variable not set!${NOCOLOR}"
+    echo -e "ERROR: FR24_KEY & ALTITUDE environment variable not set!"
     EXITCODE=1
   fi
   # ERROR ?
   if [ $EXITCODE -gt 0 ]; then
-    echo -e "${LIGHTRED}ERROR: see behind for list of errors!${NOCOLOR}"
+    echo -e "ERROR: see behind for list of errors!"
     exit 1
   fi
   # Signup Vars
@@ -55,7 +50,7 @@ if [ -z "${FR24_KEY}" ]; then
   # shellcheck disable=SC2153
   {
     echo '#!/usr/bin/env expect --'
-    echo 'set timeout 180'
+    echo 'set timeout 90'
     echo "spawn fr24feed --signup"
     echo "sleep 3"
     echo 'expect "Step 1.1 - Enter your email address (username@domain.tld)\r\n$:"'
@@ -98,7 +93,7 @@ if [ -z "${FR24_KEY}" ]; then
   } > "$TMPFILE"
   # Run Scrpit
   if ! expect "$TMPFILE" > "$TMPLOG" 2>&1; then
-    echo -e "${LIGHTRED}ERROR: Problem running sign-up process${NOCOLOR}"
+    echo -e "ERROR: Problem running sign-up process"
     echo ""
     cat "$TMPLOG"
     exit 1
@@ -110,9 +105,9 @@ if [ -z "${FR24_KEY}" ]; then
   NB_LINE_KEY=$(grep -Pc "$REGEX_KEY" "$TMPLOG")
   if [ "$NB_LINE_KEY" -gt 0 ]; then
     FR24_NEWKEY=$(grep -P "$REGEX_KEY" "$TMPLOG" | sed -r "s/$REGEX_KEY/\1/")
-    echo -e "${CYAN}FR24_KEY=$FR24_NEWKEY ${NOCOLOR}"
+    echo -e "FR24_KEY=$FR24_NEWKEY"
   else
-    echo -e "${LIGHTRED}ERROR: Could not find sharing key${NOCOLOR}"
+    echo -e "ERROR: Could not find sharing key"
     echo ""
     cat "$TMPLOG"
     exit 1
@@ -121,9 +116,9 @@ if [ -z "${FR24_KEY}" ]; then
   NB_LINE_ID=$(grep -Pc "$REGEX_RADAR_ID" "$TMPLOG")
   if [ "$NB_LINE_ID" -gt 0 ]; then
     FR24_RID=$(grep -P "$REGEX_RADAR_ID" "$TMPLOG" | sed -r "s/$REGEX_RADAR_ID/\1/")
-    echo -e "${CYAN}RADAR_ID=$FR24_RID ${NOCOLOR}"
+    echo -e "RADAR_ID=$FR24_RID"
   else
-    echo -e "${LIGHTRED}ERROR: Could not find Radar ID${NOCOLOR}"
+    echo -e "ERROR: Could not find Radar ID"
     echo ""
     cat "$TMPLOG"
     exit 1
@@ -133,12 +128,12 @@ if [ -z "${FR24_KEY}" ]; then
   printf "%s" "$FR24_NEWKEY" > /var/run/s6/container_environment/FR24_KEY
   # Inform User
   echo ""
-  echo -e "${CYAN}INFO: Please restart the container with environment variable FR24_KEY=$FR24_NEWKEY environment variable${NOCOLOR}"
-  echo -e "${CYAN}You can remove FR24_MAIL, LATITUDE, LONGITUDE & ALTITUDE environment variable${NOCOLOR}"
+  echo -e "INFO: Please restart the container with environment variable FR24_KEY=$FR24_NEWKEY environment variable"
+  echo -e "You can remove FR24_MAIL, LATITUDE, LONGITUDE & ALTITUDE environment variable"
 else
   # FR24_KEY & signup env variables
   if [ -n "${FR24_MAIL}" ] || [ -n "${LATITUDE}" ] || [ -n "${LONGITUDE}" ] || [ -n "${ALTITUDE}" ]; then
-    echo -e "${CYAN}FR24_MAIL, LATITUDE, LONGITUDE & ALTITUDE environment variable are not used when FR24_KEY is provided ${NOCOLOR}"
+    echo -e "FR24_MAIL, LATITUDE, LONGITUDE & ALTITUDE environment variable are not used when FR24_KEY is provided"
   fi
 fi
 
