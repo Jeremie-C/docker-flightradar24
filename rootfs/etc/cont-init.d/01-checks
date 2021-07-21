@@ -11,7 +11,7 @@ fi
 # FR24Key and Signup
 if [ -z "${FR24_KEY}" ]; then
   if [ -s "/FR24_KEY" ]; then
-    KEY_VAL=$(cat /FR24_KEY)
+    KEY_VAL="$(cat /FR24_KEY)"
     echo "INFO: Signup already processed."
     echo "INFO: Please restart the container with environment variable FR24_KEY=$KEY_VAL environment variable"
     echo "INFO: You can remove FR24_MAIL, LATITUDE, LONGITUDE & ALTITUDE environment variable"
