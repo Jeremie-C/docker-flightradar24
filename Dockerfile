@@ -1,4 +1,4 @@
-FROM debian:buster-slim
+FROM debian:bullseye-slim
 
 ENV S6_BEHAVIOUR_IF_STAGE2_FAILS=2 \
     BEAST_PORT=30005
@@ -27,5 +27,5 @@ RUN apt-get update && apt-get upgrade -y && \
 
 ENTRYPOINT ["/init"]
 EXPOSE 8754/tcp
-HEALTHCHECK --start-period=60s --interval=300s CMD /healthcheck.sh
+HEALTHCHECK --start-period=120s --interval=300s CMD /healthcheck.sh
 LABEL maintainer="Jeremie-C <Jeremie-C@users.noreply.github.com>"
