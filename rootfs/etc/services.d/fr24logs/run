@@ -1,0 +1,8 @@
+#!/usr/bin/with-contenv bash
+#shellcheck shell=bash
+
+set -o pipefail
+
+tail -F /var/log/fr24feed/fr24feed.log 2> /dev/null | \
+  stdbuf -o0 sed --unbuffered '/^\s*$/d' | \
+  mawk -W Interactive '{print "[fr24feed] " $0}'

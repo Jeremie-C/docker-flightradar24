@@ -1,0 +1,6 @@
+#!/usr/bin/with-contenv bash
+# shellcheck shell=bash
+
+# FR24FEED.ini
+sed -i -e "/^fr24key=.*/c\fr24key=\"${FR24_KEY}\"" /etc/fr24feed.ini
+sed -i -e "/^host=.*/c\host=\"${BEAST_HOST}:${BEAST_PORT:-30005}\"" /etc/fr24feed.ini
