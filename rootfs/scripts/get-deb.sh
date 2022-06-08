@@ -9,13 +9,13 @@ case $arch in
     FR24FILE="https://repo-feed.flightradar24.com/linux_x86_binaries/fr24feed_1.0.25-3_i386.deb"
     ;;
   armhf)
-    FR24FILE="https://repo-feed.flightradar24.com/rpi_binaries/fr24feed_1.0.28-1_armhf.deb"
+    FR24FILE="https://repo-feed.flightradar24.com/rpi_binaries/fr24feed_1.0.29-6_armhf.deb"
     ;;
   arm64)
-  FR24FILE="https://repo-feed.flightradar24.com/rpi_binaries/fr24feed_1.0.28-1_armhf.deb"
+  FR24FILE="https://repo-feed.flightradar24.com/rpi_binaries/fr24feed_1.0.29-6_armhf.deb"
     ;;
   armel)
-  FR24FILE="https://repo-feed.flightradar24.com/rpi_binaries/fr24feed_1.0.28-1_armhf.deb"
+  FR24FILE="https://repo-feed.flightradar24.com/rpi_binaries/fr24feed_1.0.29-6_armhf.deb"
     ;;
   *)
     exit 1
